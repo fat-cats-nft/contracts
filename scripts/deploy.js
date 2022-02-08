@@ -5,7 +5,7 @@ async function main() {
 
     // We get the contract to deploy
     const NFTCollectible = await hre.ethers.getContractFactory("NFTCollectible");
-    const collectible = await NFTCollectible.deploy("Deploying NFT collectible...");
+    const collectible = await NFTCollectible.deploy(baseTokenURI);
 
     await collectible.deployed();
 
