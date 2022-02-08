@@ -46,7 +46,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         require(totalMinted.add(_count) <= MAX_SUPPLY, "Not enough NFTs!");
 
         require(
-            _count > 0 && _count <= MAC_PER_MINT,
+            _count > 0 && _count <= MAX_PER_MINT,
             "Cannot mint specified number of NFTs."
         );
 
@@ -55,18 +55,18 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
             "Not enough ether to purchase NFTs."
         );
 
-        for (uint256 i = 0; i < count; i++) {
+        for (uint256 i = 0; i < _count; i++) {
             _mintSingleNFT();
         }
     }
 
-    function mintSingleNFT() private {
+    function _mintSingleNFT() private {
         uint256 newTokenID = _tokenIds.current();
         _safeMint(msg.sender, newTokenID);
         _tokenIds.increment();
     }
 
-    function tokensOfOwner(Address _owner)
+    function tokensOfOwner(address _owner)
         external
         view
         returns (uint256[] memory)
@@ -82,7 +82,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     }
 
     function withdraw() public payable onlyOwner {
-        uint256 balancer = address(this).balance;
+        uint256 balance = address(this).balance;
         require(balance > 0, "No ether left to withdraw");
 
         (bool success, ) = (msg.sender).call{value: balance}("");
