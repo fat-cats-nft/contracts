@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 
 async function main() {
-    const baseTokenURI = "ipfs://QmZbWNKJPAjxXuNFSEaksCJVd1M6DaKQViJBYPK2BdpDEP/"
+    const baseTokenURI = "ipfs://QmeFEzR5zXjoNFMWbUziKRq4xpKJX117DoGkfUd5HfRAHw/"
 
     // We get the contract to deploy
     const NFTCollectible = await hre.ethers.getContractFactory("NFTCollectible");

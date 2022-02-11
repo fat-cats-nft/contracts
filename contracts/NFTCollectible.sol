@@ -12,13 +12,13 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     Counters.Counter private _tokenIds;
 
-    uint256 public constant MAX_SUPPLY = 1000;
-    uint256 public constant PRICE = 0.1 ether;
-    uint256 public constant MAX_PER_MINT = 5;
+    uint256 public constant MAX_SUPPLY = 2;
+    uint256 public constant PRICE = 0.01 ether;
+    uint256 public constant MAX_PER_MINT = 1;
 
     string public baseTokenURI;
 
-    constructor(string memory baseURI) ERC721("Fat Cats NFT", "FCNFT") {
+    constructor(string memory baseURI) ERC721("Fat Cats NFT v3.0", "FCNFT") {
         setBaseURI(baseURI);
     }
 

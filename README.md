@@ -13,3 +13,11 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
+
+Other useful commands: 
+
+```
+npx hardhat run --network rinkeby scripts/deploy.js
+npx hardhat clean
+npx hardhat verify ADDRESS PARAM --network rinkeby
+```
