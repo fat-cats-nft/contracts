@@ -1,12 +1,12 @@
 {
-    "name": "Stairway",
-    "description": "Picture of stairway.",
-    "image": "https://storage.googleapis.com/fat-cats-nft-test-images/stairway-1136071_1920.jpg",
+    "name": "Yellow",
+    "description": "Picture of yellow.",
+    "image": "https://storage.googleapis.com/fat-cats-nft-test-images/clouds-3526558_1920.jpg",
     "external_url": "https://www.fatcatsnft.com",
     "attributes": [
         {
             "trait_type": "Level",
-            "value": 1
+            "value": 2
         },
         {
             "trait_type": "Literate",

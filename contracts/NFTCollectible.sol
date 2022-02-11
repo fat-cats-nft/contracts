@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 contract NFTCollectible is ERC721Enumerable, Ownable {
@@ -12,13 +13,15 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     Counters.Counter private _tokenIds;
 
-    uint256 public constant MAX_SUPPLY = 2;
+    uint256 public constant MAX_SUPPLY = 100;
     uint256 public constant PRICE = 0.01 ether;
     uint256 public constant MAX_PER_MINT = 1;
 
     string public baseTokenURI;
+    // Mapping from tokenId to token level
+    mapping(uint256 => uint8) public levels;
 
-    constructor(string memory baseURI) ERC721("Fat Cats NFT v3.0", "FCNFT") {
+    constructor(string memory baseURI) ERC721("Fat Cats NFT", "FCNFT") {
         setBaseURI(baseURI);
     }
 
@@ -28,6 +31,34 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     function _baseURI() internal view virtual override returns (string memory) {
         return baseTokenURI;
+    }
+
+    function _incrementTokenLevel(uint256 _tokenId) public onlyOwner {
+        levels[_tokenId]++;
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        string memory baseURI = _baseURI();
+        string memory uri = string(
+            abi.encodePacked(
+                baseURI,
+                Strings.toString(tokenId),
+                "/",
+                Strings.toString(levels[tokenId])
+            )
+        );
+        return bytes(baseURI).length > 0 ? uri : "";
     }
 
     function reserveNFTs() public onlyOwner {
@@ -63,6 +94,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     function _mintSingleNFT() private {
         uint256 newTokenID = _tokenIds.current();
         _safeMint(msg.sender, newTokenID);
+        _incrementTokenLevel(newTokenID);
         _tokenIds.increment();
     }
 
