@@ -1,0 +1,16 @@
+{
+    "name": "Books",
+    "description": "Picture of books.",
+    "image": "https://storage.googleapis.com/fat-cats-nft-test-images/books-1655783_1920.jpg",
+    "external_url": "https://www.fatcatsnft.com",
+    "attributes": [
+        {
+            "trait_type": "Level",
+            "value": 1
+        },
+        {
+            "trait_type": "Literate",
+            "value": "Yes"
+        }
+    ]
+}

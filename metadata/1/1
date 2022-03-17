@@ -1,0 +1,16 @@
+{
+    "name": "Yellow",
+    "description": "Picture of yellow.",
+    "image": "https://storage.googleapis.com/fat-cats-nft-test-images/yellow-926728_1920.jpg",
+    "external_url": "https://www.fatcatsnft.com",
+    "attributes": [
+        {
+            "trait_type": "Level",
+            "value": 1
+        },
+        {
+            "trait_type": "Literate",
+            "value": "No"
+        }
+    ]
+}
