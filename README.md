@@ -21,3 +21,6 @@ npx hardhat run --network rinkeby scripts/deploy.js
 npx hardhat clean
 npx hardhat verify ADDRESS PARAM --network rinkeby
 ```
+
+Resources:
+https://docs.openzeppelin.com/learn/deploying-and-interacting#deploying-a-smart-contract

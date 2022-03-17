@@ -6,20 +6,22 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "hardhat/console.sol";
 
 contract NFTCollectible is ERC721Enumerable, Ownable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIds;
-
-    uint256 public constant MAX_SUPPLY = 100;
-    uint256 public constant PRICE = 0.01 ether;
-    uint256 public constant MAX_PER_MINT = 1;
-
     string public baseTokenURI;
-    // Mapping from tokenId to token level
+
+    uint256 public constant MAX_SUPPLY = 1000;
+    uint256 public constant PRICE = 0.01 ether;
+    uint256 public constant MAX_PER_MINT = 3;
+    // Mapping from tokenId to fatness level
     mapping(uint256 => uint8) public levels;
+    // Mapping from tokenId to calories fed
+    mapping(uint256 => uint256) public calories;
 
     constructor(string memory baseURI) ERC721("Fat Cats NFT", "FCNFT") {
         setBaseURI(baseURI);
@@ -31,10 +33,6 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     function _baseURI() internal view virtual override returns (string memory) {
         return baseTokenURI;
-    }
-
-    function _incrementTokenLevel(uint256 _tokenId) public onlyOwner {
-        levels[_tokenId]++;
     }
 
     function tokenURI(uint256 tokenId)
@@ -61,12 +59,23 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         return bytes(baseURI).length > 0 ? uri : "";
     }
 
+    // Feed NFT food tokens
+    function feed(uint256 _tokenId) public payable {
+        calories[_tokenId] += msg.value;
+    }
+
+    // Upgrade token to the next level
+    function _incrementTokenLevel(uint256 _tokenId) public {
+        levels[_tokenId]++;
+    }
+
     function reserveNFTs() public onlyOwner {
         uint256 totalMinted = _tokenIds.current();
+        uint256 _tokensToMint = 10;
 
-        require(totalMinted.add(10) < MAX_SUPPLY, "Not enough NFTs");
+        require(totalMinted.add(_tokensToMint) < MAX_SUPPLY, "Not enough NFTs");
 
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < _tokensToMint; i++) {
             _mintSingleNFT();
         }
     }
