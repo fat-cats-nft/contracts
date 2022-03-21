@@ -18,7 +18,6 @@ describe("NFT Collectible", function () {
         expect(await contract.totalSupply()).to.equal(0);
         expect(await contract.PRICE()).to.equal(ethers.BigNumber.from("100000000000000000"));
         expect(await contract.levels(0)).to.equal(0);
-        expect(await contract.calories(0)).to.equal(ethers.BigNumber.from("0"));
     });
 
     it("Should properly update the base token uri", async function () {

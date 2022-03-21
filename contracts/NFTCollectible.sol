@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "hardhat/console.sol";
 
 contract NFTCollectible is ERC721Enumerable, Ownable {
     using SafeMath for uint256;
@@ -21,8 +20,6 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     uint256 public constant MAX_PER_MINT = 3;
     // Mapping from tokenId to fatness level
     mapping(uint256 => uint8) public levels;
-    // Mapping from tokenId to calories consumed
-    mapping(uint256 => uint256) public calories;
 
     constructor(string memory baseURI) ERC721("Fat Cats NFT", "FCNFT") {
         setBaseURI(baseURI);
@@ -128,25 +125,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         }
     }
 
-    // Feed NFT food tokens
-    function feed(uint256 _tokenId) public payable {
-        require(msg.value >= 0.1 ether);
-        calories[_tokenId] += msg.value;
-    }
-
-    // Upgrade NFT
-    function upgrade(uint256 _tokenId) public {
-        uint256 _currentLevel = levels[_tokenId];
-        uint256 _calorieRequirements = 10**(_currentLevel - 1) * 10**18;
-        uint256 _consumedCalories = calories[_tokenId];
-        require(
-            _consumedCalories >= _calorieRequirements,
-            "Insufficient calories to upgrade NFT. You need to feed your cat more!"
-        );
-        _incrementTokenLevel(_tokenId);
-        calories[_tokenId] -= _calorieRequirements;
-    }
-
+    // Withdraw ETH funds
     function withdraw() public payable onlyOwner {
         uint256 balance = address(this).balance;
         require(balance > 0, "No ether left to withdraw");
