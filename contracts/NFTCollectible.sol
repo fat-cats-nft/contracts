@@ -20,6 +20,9 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     uint256 public constant MAX_PER_MINT = 3;
     // Mapping from tokenId to fatness level
     mapping(uint256 => uint8) public levels;
+    // Allow list + mapping for addresses to upgrade token levels
+    address[] public upgradeAllowList;
+    mapping(address => bool) public upgradeAllowMap;
 
     constructor(string memory baseURI) ERC721("Fat Cats NFT", "FCNFT") {
         setBaseURI(baseURI);
@@ -123,6 +126,35 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         for (uint256 i = 0; i < _count; i++) {
             _mintSingleNFT();
         }
+    }
+
+    // Add address to token level upgrade allow list
+    function addAddressToUpgradeAllowList(address _address) public onlyOwner {
+        if (!upgradeAllowMap[_address]) {
+            upgradeAllowList.push(_address);
+            upgradeAllowMap[_address] = true;
+        }
+    }
+
+    // Remove address from token level upgrade allow list
+    function removeAddressFromUpgradeAllowList(address _address)
+        public
+        onlyOwner
+    {
+        if (upgradeAllowMap[_address]) {
+            for (uint256 i = 0; i < upgradeAllowList.length; i++) {
+                if (upgradeAllowList[i] == _address) {
+                    delete upgradeAllowList[i];
+                }
+            }
+            delete upgradeAllowMap[_address];
+        }
+    }
+
+    // Upgrade token level
+    function upgradeTokenLevel(uint256 _tokenId) public {
+        require(upgradeAllowMap[msg.sender]);
+        _incrementTokenLevel(_tokenId);
     }
 
     // Withdraw ETH funds

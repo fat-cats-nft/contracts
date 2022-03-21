@@ -187,6 +187,11 @@ describe("NFT Collectible", function () {
         expect(tokensOfMinter.length).to.equal(3);
         for (let i = 0; i < tokensOfMinter.length; i++) {
             expect(tokensOfMinter[i]).to.equal(ethers.BigNumber.from(i.toString()));
+            expect(await contract.levels(i)).to.equal(1);
         }
+    });
+
+    it("Should update upgradeAllowList properly + gate level upgrades accordingly", async function () {
+
     });
 });
