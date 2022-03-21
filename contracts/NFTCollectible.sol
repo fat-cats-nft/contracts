@@ -12,7 +12,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIds;
+    Counters.Counter internal _tokenIds;
     string public baseTokenURI;
 
     uint8 public MAX_LEVEL = 4;
@@ -36,6 +36,26 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         return baseTokenURI;
     }
 
+    // Setter to adjust max fat cat level
+    function setMaxLevel(uint8 _level) public onlyOwner {
+        MAX_LEVEL = _level;
+    }
+
+    // Helper function to upgrade token to the next level
+    function _incrementTokenLevel(uint256 _tokenId) internal {
+        require(levels[_tokenId] < MAX_LEVEL, "You've reached max fatness.");
+        levels[_tokenId]++;
+    }
+
+    // Helper function to mint single NFT
+    function _mintSingleNFT() internal {
+        uint256 newTokenID = _tokenIds.current();
+        _safeMint(msg.sender, newTokenID);
+        _incrementTokenLevel(newTokenID);
+        _tokenIds.increment();
+    }
+
+    // Override tokenURI function to include token level
     function tokenURI(uint256 tokenId)
         public
         view
@@ -60,38 +80,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         return bytes(baseURI).length > 0 ? uri : "";
     }
 
-    // Setter to adjust max fat cat level
-    function setMaxLevel(uint8 _level) public onlyOwner {
-        MAX_LEVEL = _level;
-    }
-
-    // Feed NFT food tokens
-    function feed(uint256 _tokenId) public payable {
-        require(msg.value >= 0.1 ether);
-        calories[_tokenId] += msg.value;
-    }
-
-    // Upgrade NFT
-    function upgrade(uint256 _tokenId) public {
-        uint256 _currentLevel = levels[_tokenId];
-        uint256 _calorieRequirements = 10**(_currentLevel - 1) * 10**18;
-        console.log(_calorieRequirements);
-        uint256 _consumedCalories = calories[_tokenId];
-        console.log(_consumedCalories);
-        require(
-            _consumedCalories >= _calorieRequirements,
-            "Insufficient calories to upgrade NFT. You need to feed your cat more!"
-        );
-        _incrementTokenLevel(_tokenId);
-        calories[_tokenId] -= _calorieRequirements;
-    }
-
-    // Helper function to upgrade token to the next level
-    function _incrementTokenLevel(uint256 _tokenId) private {
-        require(levels[_tokenId] < MAX_LEVEL, "You've reached max fatness.");
-        levels[_tokenId]++;
-    }
-
+    // Reserve NFTs
     function reserveNFTs() public onlyOwner {
         uint256 totalMinted = _tokenIds.current();
         uint256 _tokensToMint = 10;
@@ -123,11 +112,23 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         }
     }
 
-    function _mintSingleNFT() private {
-        uint256 newTokenID = _tokenIds.current();
-        _safeMint(msg.sender, newTokenID);
-        _incrementTokenLevel(newTokenID);
-        _tokenIds.increment();
+    // Feed NFT food tokens
+    function feed(uint256 _tokenId) public payable {
+        require(msg.value >= 0.1 ether);
+        calories[_tokenId] += msg.value;
+    }
+
+    // Upgrade NFT
+    function upgrade(uint256 _tokenId) public {
+        uint256 _currentLevel = levels[_tokenId];
+        uint256 _calorieRequirements = 10**(_currentLevel - 1) * 10**18;
+        uint256 _consumedCalories = calories[_tokenId];
+        require(
+            _consumedCalories >= _calorieRequirements,
+            "Insufficient calories to upgrade NFT. You need to feed your cat more!"
+        );
+        _incrementTokenLevel(_tokenId);
+        calories[_tokenId] -= _calorieRequirements;
     }
 
     function tokensOfOwner(address _owner)
