@@ -55,6 +55,22 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         _tokenIds.increment();
     }
 
+    // Get tokens for a given owner
+    function tokensOfOwner(address _owner)
+        external
+        view
+        returns (uint256[] memory)
+    {
+        uint256 tokenCount = balanceOf(_owner);
+        uint256[] memory tokensId = new uint256[](tokenCount);
+
+        for (uint256 i = 0; i < tokenCount; i++) {
+            tokensId[i] = tokenOfOwnerByIndex(_owner, i);
+        }
+
+        return tokensId;
+    }
+
     // Override tokenURI function to include token level
     function tokenURI(uint256 tokenId)
         public
@@ -129,21 +145,6 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         );
         _incrementTokenLevel(_tokenId);
         calories[_tokenId] -= _calorieRequirements;
-    }
-
-    function tokensOfOwner(address _owner)
-        external
-        view
-        returns (uint256[] memory)
-    {
-        uint256 tokenCount = balanceOf(_owner);
-        uint256[] memory tokensId = new uint256[](tokenCount);
-
-        for (uint256 i = 0; i < tokenCount; i++) {
-            tokensId[i] = tokenOfOwnerByIndex(_owner, i);
-        }
-
-        return tokensId;
     }
 
     function withdraw() public payable onlyOwner {
