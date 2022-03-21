@@ -97,9 +97,8 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     }
 
     // Reserve NFTs
-    function reserveNFTs() public onlyOwner {
+    function reserveNFTs(uint256 _tokensToMint) public onlyOwner {
         uint256 totalMinted = _tokenIds.current();
-        uint256 _tokensToMint = 10;
 
         require(totalMinted.add(_tokensToMint) < MAX_SUPPLY, "Not enough NFTs");
 
@@ -108,6 +107,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         }
     }
 
+    // Mint multiple NFTs
     function mintNFTs(uint256 _count) public payable {
         uint256 totalMinted = _tokenIds.current();
 
