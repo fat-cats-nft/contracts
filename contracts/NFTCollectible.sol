@@ -17,7 +17,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
 
     uint8 public MAX_LEVEL = 4;
     uint256 public constant MAX_SUPPLY = 1000;
-    uint256 public constant PRICE = 0.01 ether;
+    uint256 public constant PRICE = 0.1 ether;
     uint256 public constant MAX_PER_MINT = 3;
     // Mapping from tokenId to fatness level
     mapping(uint256 => uint8) public levels;
@@ -111,7 +111,7 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
     function mintNFTs(uint256 _count) public payable {
         uint256 totalMinted = _tokenIds.current();
 
-        require(totalMinted.add(_count) <= MAX_SUPPLY, "Not enough NFTs!");
+        require(totalMinted.add(_count) <= MAX_SUPPLY, "Not enough NFTs");
 
         require(
             _count > 0 && _count <= MAX_PER_MINT,
