@@ -1,5 +1,8 @@
-const { expect, should } = require("chai");
-const { ethers } = require("hardhat");
+const chai = require('chai');
+const expect = chai.expect;
+const BN = require('bn.js');
+chai.use(require('chai-bn')(BN));
+const { ethers, waffle } = require("hardhat");
 
 describe("NFT Collectible", function () {
     const initialBaseTokenURI = "Initial Base Token URI/"
@@ -269,5 +272,52 @@ describe("NFT Collectible", function () {
         expect(await contract.getUpgradeAllowList()).to.deep.equal([defaultAddress, ownerAddress]);
         expect(await contract.upgradeAllowMap(address1)).to.equal(false);
 
+    });
+
+    it("Should withdraw ETH from contract", async function () {
+        // Deploy the contract
+        const Factory = await ethers.getContractFactory("NFTCollectible");
+        const contract = await Factory.deploy(initialBaseTokenURI);
+        await contract.deployed();
+
+        // Get signers
+        const [owner, addr1] = await ethers.getSigners();
+
+        // Get addresses
+        const contractAddress = contract.address;
+        const ownerAddress = owner.address;
+
+        // Check to make sure withdraw is only owner
+        await expect(contract.connect(addr1).withdraw()).to.be.revertedWith("Ownable: caller is not the owner");
+
+        // Fail to withdraw if zero balance
+        await expect(contract.withdraw()).to.be.revertedWith("No ether left to withdraw");
+
+        // Check contract balance equals 0 ETH before transfer
+        const provider = waffle.provider;
+        expect(await provider.getBalance(contractAddress)).to.equal(ethers.BigNumber.from("0"));
+
+        // Transfer 1 ETH to contract
+        const ethTransferTxn = await owner.sendTransaction({
+            to: contract.address,
+            value: ethers.utils.parseEther("1.0"), // Sends exactly 1.0 ether
+        });
+        await ethTransferTxn.wait();
+
+        // Check contract balance equals 1 ETH
+        expect(await provider.getBalance(contractAddress)).to.equal(ethers.BigNumber.from("1000000000000000000"));
+
+        // Withdraw ETH from contract
+        const ownerBalanceOrig = await provider.getBalance(ownerAddress);
+        const withdrawTxn = await contract.withdraw();
+        await withdrawTxn.wait();
+
+        // Check contract + owner balance after withdrawal
+        expect(await provider.getBalance(contractAddress)).to.equal(ethers.BigNumber.from("0"));
+        const ownerBalanceDiff = (await provider.getBalance(ownerAddress)).sub(ownerBalanceOrig).toString();
+        const lowerLimit = new BN("900000000000000000");
+        const upperLimit = new BN("1000000000000000000");
+        expect(ownerBalanceDiff).to.be.a.bignumber.that.is.at.least(lowerLimit);
+        expect(ownerBalanceDiff).to.be.a.bignumber.that.is.at.most(upperLimit);
     });
 });

@@ -161,6 +161,11 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         _incrementTokenLevel(_tokenId);
     }
 
+    // Receive ETH
+    receive() external payable {
+        // React to receiving ether
+    }
+
     // Withdraw ETH funds
     function withdraw() public payable onlyOwner {
         uint256 balance = address(this).balance;
