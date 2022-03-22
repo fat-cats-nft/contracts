@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "hardhat/console.sol";
 
 contract NFTCollectible is ERC721Enumerable, Ownable {
     using SafeMath for uint256;
@@ -128,6 +129,11 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         }
     }
 
+    // Get AllowList
+    function getUpgradeAllowList() public view returns (address[] memory) {
+        return upgradeAllowList;
+    }
+
     // Add address to token level upgrade allow list
     function addAddressToUpgradeAllowList(address _address) public onlyOwner {
         if (!upgradeAllowMap[_address]) {
@@ -141,19 +147,17 @@ contract NFTCollectible is ERC721Enumerable, Ownable {
         public
         onlyOwner
     {
-        if (upgradeAllowMap[_address]) {
-            for (uint256 i = 0; i < upgradeAllowList.length; i++) {
-                if (upgradeAllowList[i] == _address) {
-                    delete upgradeAllowList[i];
-                }
+        for (uint256 i = 0; i < upgradeAllowList.length; i++) {
+            if (upgradeAllowList[i] == _address) {
+                delete upgradeAllowList[i];
             }
-            delete upgradeAllowMap[_address];
         }
+        delete upgradeAllowMap[_address];
     }
 
     // Upgrade token level
     function upgradeTokenLevel(uint256 _tokenId) public {
-        require(upgradeAllowMap[msg.sender]);
+        require(upgradeAllowMap[msg.sender], "Msg.sender not on allow list");
         _incrementTokenLevel(_tokenId);
     }
 

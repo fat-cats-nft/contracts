@@ -18,6 +18,7 @@ describe("NFT Collectible", function () {
         expect(await contract.totalSupply()).to.equal(0);
         expect(await contract.PRICE()).to.equal(ethers.BigNumber.from("100000000000000000"));
         expect(await contract.levels(0)).to.equal(0);
+        expect(await contract.getUpgradeAllowList()).to.deep.equal([]);
     });
 
     it("Should properly update the base token uri", async function () {
@@ -192,6 +193,81 @@ describe("NFT Collectible", function () {
     });
 
     it("Should update upgradeAllowList properly + gate level upgrades accordingly", async function () {
+        // Deploy the contract
+        const Factory = await ethers.getContractFactory("NFTCollectible");
+        const contract = await Factory.deploy(initialBaseTokenURI);
+        await contract.deployed();
+
+        // Get signers
+        const [owner, addr1] = await ethers.getSigners();
+        const ownerAddress = owner.address;
+        const address1 = addr1.address;
+        const defaultAddress = "0x0000000000000000000000000000000000000000";
+
+        // Mint nft & check level
+        const mintNFTTxn = await contract.mintNFTs(1, { value: ethers.utils.parseEther("0.1") });
+        await mintNFTTxn.wait();
+        expect(await contract.levels(0)).to.equal(1);
+
+        // Make sure addAddressToUpgradeAllowList is only owner
+        await expect(contract.connect(addr1).addAddressToUpgradeAllowList(address1)).to.be.revertedWith("Ownable: caller is not the owner");
+
+        // Update upgradeAllowList
+        const addAddressToUpgradeAllowListTxn1 = await contract.addAddressToUpgradeAllowList(address1);
+        await addAddressToUpgradeAllowListTxn1.wait();
+        expect(await contract.getUpgradeAllowList()).to.deep.equal([address1]);
+        expect(await contract.upgradeAllowMap(address1)).to.equal(true);
+        expect(await contract.upgradeAllowMap(ownerAddress)).to.equal(false);
+
+        // Upgrade NFT level
+
+        // Failure
+        await expect(contract.upgradeTokenLevel(0)).to.be.revertedWith("Msg.sender not on allow list");
+        expect(await contract.levels(0)).to.equal(1);
+
+        // Success
+        const updateNFTLevelTxn1 = await contract.connect(addr1).upgradeTokenLevel(0);
+        await updateNFTLevelTxn1.wait();
+        expect(await contract.levels(0)).to.equal(2);
+
+        // Add owner to allowlist
+        const addAddressToUpgradeAllowListTxn2 = await contract.addAddressToUpgradeAllowList(ownerAddress);
+        await addAddressToUpgradeAllowListTxn2.wait();
+        expect(await contract.getUpgradeAllowList()).to.deep.equal([address1, ownerAddress]);
+        expect(await contract.upgradeAllowMap(ownerAddress)).to.equal(true);
+        expect(await contract.upgradeAllowMap(address1)).to.equal(true);
+
+        // Upgrade NFT level with owner
+        const updateNFTLevelTxn2 = await contract.upgradeTokenLevel(0);
+        await updateNFTLevelTxn2.wait();
+        expect(await contract.levels(0)).to.equal(3);
+
+        // Remove addr1 from allowlist
+
+        // Make sure that remove function is only owner
+        await expect(contract.connect(addr1).removeAddressFromUpgradeAllowList(address1)).to.be.revertedWith("Ownable: caller is not the owner");
+
+        // Remove addr1
+        const removeAddressFromUpgradeAllowListTxn = await contract.removeAddressFromUpgradeAllowList(address1);
+        await removeAddressFromUpgradeAllowListTxn.wait();
+
+        // Check to make sure addr1 is no longer on allowlist + can no longer upgrade levels
+        expect(await contract.getUpgradeAllowList()).to.deep.equal([defaultAddress, ownerAddress]);
+        expect(await contract.upgradeAllowMap(address1)).to.equal(false);
+        await expect(contract.connect(addr1).upgradeTokenLevel(0)).to.be.revertedWith("Msg.sender not on allow list");
+        expect(await contract.levels(0)).to.equal(3);
+
+        // Check to make sure you can't add address more than once
+        const addAddressToUpgradeAllowListTxn3 = await contract.addAddressToUpgradeAllowList(ownerAddress);
+        await addAddressToUpgradeAllowListTxn3.wait();
+        expect(await contract.getUpgradeAllowList()).to.deep.equal([defaultAddress, ownerAddress]);
+        expect(await contract.upgradeAllowMap(ownerAddress)).to.equal(true);
+
+        // Check to make sure you can't remove address more than once
+        const removeAddressFromUpgradeAllowListTxn2 = await contract.removeAddressFromUpgradeAllowList(address1);
+        await removeAddressFromUpgradeAllowListTxn2.wait();
+        expect(await contract.getUpgradeAllowList()).to.deep.equal([defaultAddress, ownerAddress]);
+        expect(await contract.upgradeAllowMap(address1)).to.equal(false);
 
     });
 });
